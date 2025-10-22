@@ -5,6 +5,7 @@ com\pdau\Authentication\repository\AdminRepository.class
 com\pdau\Authentication\dto\AuthResponse.class
 com\pdau\Authentication\controller\AdminController.class
 com\pdau\Authentication\dto\AuthRequest.class
+com\pdau\Authentication\config\WebConfig.class
 com\pdau\Authentication\service\JwtService.class
 com\pdau\Authentication\security\JwtFilter.class
 com\pdau\Authentication\security\PasswordEncoderConfig.class
