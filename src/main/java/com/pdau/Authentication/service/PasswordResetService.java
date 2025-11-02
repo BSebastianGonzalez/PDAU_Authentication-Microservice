@@ -4,13 +4,19 @@ import com.pdau.Authentication.model.Admin;
 import com.pdau.Authentication.model.PasswordResetToken;
 import com.pdau.Authentication.repository.AdminRepository;
 import com.pdau.Authentication.repository.PasswordResetTokenRepository;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -21,26 +27,40 @@ public class PasswordResetService {
     private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
     private final PasswordResetTokenRepository tokenRepository;
+    private final TemplateEngine templateEngine;
 
     public void sendResetLink(String correo) {
         Admin admin = adminRepository.findByCorreo(correo)
                 .orElseThrow(() -> new RuntimeException("Correo no registrado"));
 
-        // Generar token único
+        // Generar token único con expiración
         String token = UUID.randomUUID().toString();
-        PasswordResetToken resetToken = new PasswordResetToken(token, admin, LocalDateTime.now().plusMinutes(15));
+        PasswordResetToken resetToken = new PasswordResetToken(
+                token, admin, LocalDateTime.now().plusMinutes(15)
+        );
         tokenRepository.save(resetToken);
 
-        // Crear enlace
-        String link = "http://localhost:5173/reset-password?token=" + token;
+        // Crear enlace de restablecimiento
+        String link = "https://micro-pdau.vercel.app/reset-password?token=" + token;
 
-        // Enviar correo
-        SimpleMailMessage mail = new SimpleMailMessage();
-        mail.setTo(correo);
-        mail.setSubject("Restablecimiento de contraseña");
-        mail.setText("Haz clic en el siguiente enlace para cambiar tu contraseña:\n" + link);
-        mailSender.send(mail);
-        System.out.println(mail);
+        // Renderizar plantilla HTML
+        Context context = new Context();
+        context.setVariable("nombre", admin.getNombre());
+        context.setVariable("link", link);
+
+        String htmlContent = templateEngine.process("reset-password-email", context);
+
+        // Enviar correo HTML
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(correo);
+            helper.setSubject("Restablecimiento de contraseña");
+            helper.setText(htmlContent, true); // true => HTML
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al enviar el correo: " + e.getMessage());
+        }
     }
 
     public void resetPassword(String token, String newPassword) {
@@ -58,11 +78,23 @@ public class PasswordResetService {
         // Invalida el token
         tokenRepository.delete(resetToken);
 
-        SimpleMailMessage mail = new SimpleMailMessage();
-        mail.setTo(admin.getCorreo());
-        mail.setSubject("Contraseña actualizada");
-        mail.setText("Haz clic en el siguiente enlace para cambiar tu contraseña:\n");
-        mailSender.send(mail);
+        // Renderizar plantilla de confirmación
+        Context context = new Context();
+        context.setVariable("nombre", admin.getNombre());
+
+        String htmlContent = templateEngine.process("password-updated-email", context);
+
+        // Enviar correo HTML
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(admin.getCorreo());
+            helper.setSubject("Contraseña actualizada");
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al enviar el correo: " + e.getMessage());
+        }
     }
 }
 
