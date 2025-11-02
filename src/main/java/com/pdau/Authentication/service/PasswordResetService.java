@@ -54,6 +54,7 @@ public class PasswordResetService {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom("pdau.noreply@gmail.com");
             helper.setTo(correo);
             helper.setSubject("Restablecimiento de contraseña");
             helper.setText(htmlContent, true); // true => HTML
@@ -88,6 +89,7 @@ public class PasswordResetService {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setFrom("pdau.noreply@gmail.com");
             helper.setTo(admin.getCorreo());
             helper.setSubject("Contraseña actualizada");
             helper.setText(htmlContent, true);
