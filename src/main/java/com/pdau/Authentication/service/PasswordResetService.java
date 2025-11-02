@@ -4,19 +4,19 @@ import com.pdau.Authentication.model.Admin;
 import com.pdau.Authentication.model.PasswordResetToken;
 import com.pdau.Authentication.repository.AdminRepository;
 import com.pdau.Authentication.repository.PasswordResetTokenRepository;
-import jakarta.mail.internet.MimeMessage;
+import com.sendgrid.*;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 import lombok.RequiredArgsConstructor;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -25,9 +25,17 @@ public class PasswordResetService {
 
     private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JavaMailSender mailSender;
     private final PasswordResetTokenRepository tokenRepository;
     private final TemplateEngine templateEngine;
+
+    @Value("${sendgrid.api-key}")
+    private String sendGridApiKey;
+
+    @Value("${sendgrid.from-email}")
+    private String fromEmail;
+
+    @Value("${sendgrid.from-name}")
+    private String fromName;
 
     public void sendResetLink(String correo) {
         Admin admin = adminRepository.findByCorreo(correo)
@@ -50,18 +58,8 @@ public class PasswordResetService {
 
         String htmlContent = templateEngine.process("reset-password-email", context);
 
-        // Enviar correo HTML
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom("pdau.noreply@gmail.com");
-            helper.setTo(correo);
-            helper.setSubject("Restablecimiento de contraseña");
-            helper.setText(htmlContent, true); // true => HTML
-            mailSender.send(message);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al enviar el correo: " + e.getMessage());
-        }
+        // Enviar correo usando SendGrid
+        sendEmail(correo, "Restablecimiento de contraseña", htmlContent);
     }
 
     public void resetPassword(String token, String newPassword) {
@@ -82,20 +80,28 @@ public class PasswordResetService {
         // Renderizar plantilla de confirmación
         Context context = new Context();
         context.setVariable("nombre", admin.getNombre());
-
         String htmlContent = templateEngine.process("password-updated-email", context);
 
-        // Enviar correo HTML
+        // Enviar correo usando SendGrid
+        sendEmail(admin.getCorreo(), "Contraseña actualizada", htmlContent);
+    }
+
+    private void sendEmail(String toEmail, String subject, String htmlContent) {
+        Email from = new Email(fromEmail, fromName);
+        Email to = new Email(toEmail);
+        Content content = new Content("text/html", htmlContent);
+        Mail mail = new Mail(from, subject, to, content);
+
+        SendGrid sg = new SendGrid(sendGridApiKey);
+        Request request = new Request();
+
         try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom("pdau.noreply@gmail.com");
-            helper.setTo(admin.getCorreo());
-            helper.setSubject("Contraseña actualizada");
-            helper.setText(htmlContent, true);
-            mailSender.send(message);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al enviar el correo: " + e.getMessage());
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            sg.api(request);
+        } catch (IOException e) {
+            throw new RuntimeException("Error al enviar el correo con SendGrid: " + e.getMessage());
         }
     }
 }
