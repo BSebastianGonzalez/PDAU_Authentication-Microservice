@@ -58,5 +58,15 @@ public class JwtFilter extends OncePerRequestFilter {
         // Continuar con el siguiente filtro
         filterChain.doFilter(request, response);
     }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getServletPath();
+
+        // Excluir rutas públicas (no requieren JWT)
+        return path.startsWith("/auth/login")
+                || path.startsWith("/auth/forgot-password")
+                || path.startsWith("/auth/reset-password");
+    }
 }
 
