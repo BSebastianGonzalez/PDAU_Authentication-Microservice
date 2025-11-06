@@ -40,4 +40,9 @@ public class AdminController {
         Admin updated = adminService.updateAdmin(id, admin);
         return ResponseEntity.ok(updated);
     }
+
+    @GetMapping("/especiales/correos")
+    public ResponseEntity<List<String>> getCorreosAdminsEspeciales() {
+        return ResponseEntity.ok(adminService.obtenerCorreosAdminsEspeciales());
+    }
 }

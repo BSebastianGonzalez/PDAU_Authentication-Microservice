@@ -1,12 +1,14 @@
 package com.pdau.Authentication.service;
 
 import com.pdau.Authentication.model.Admin;
+import com.pdau.Authentication.model.Rol;
 import com.pdau.Authentication.repository.AdminRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -59,5 +61,12 @@ public class AdminService {
         }
 
         return adminRepository.save(existing);
+    }
+
+    public List<String> obtenerCorreosAdminsEspeciales() {
+        return adminRepository.findByRol(Rol.ADMIN_ESPECIAL)
+                .stream()
+                .map(Admin::getCorreo)
+                .collect(Collectors.toList());
     }
 }
