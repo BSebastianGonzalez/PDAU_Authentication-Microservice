@@ -6,9 +6,12 @@ C:\Users\SEBASTIAN\OneDrive\Escritorio\Universidad\8. Octavo semestre\MIcroservi
 C:\Users\SEBASTIAN\OneDrive\Escritorio\Universidad\8. Octavo semestre\MIcroservicios\Proyecto\Authentication\src\main\java\com\pdau\Authentication\dto\AuthResponse.java
 C:\Users\SEBASTIAN\OneDrive\Escritorio\Universidad\8. Octavo semestre\MIcroservicios\Proyecto\Authentication\src\main\java\com\pdau\Authentication\dto\ResetPasswordRequest.java
 C:\Users\SEBASTIAN\OneDrive\Escritorio\Universidad\8. Octavo semestre\MIcroservicios\Proyecto\Authentication\src\main\java\com\pdau\Authentication\model\Admin.java
+C:\Users\SEBASTIAN\OneDrive\Escritorio\Universidad\8. Octavo semestre\MIcroservicios\Proyecto\Authentication\src\main\java\com\pdau\Authentication\model\Documento.java
 C:\Users\SEBASTIAN\OneDrive\Escritorio\Universidad\8. Octavo semestre\MIcroservicios\Proyecto\Authentication\src\main\java\com\pdau\Authentication\model\PasswordResetToken.java
 C:\Users\SEBASTIAN\OneDrive\Escritorio\Universidad\8. Octavo semestre\MIcroservicios\Proyecto\Authentication\src\main\java\com\pdau\Authentication\model\Rol.java
+C:\Users\SEBASTIAN\OneDrive\Escritorio\Universidad\8. Octavo semestre\MIcroservicios\Proyecto\Authentication\src\main\java\com\pdau\Authentication\model\TipoDocumento.java
 C:\Users\SEBASTIAN\OneDrive\Escritorio\Universidad\8. Octavo semestre\MIcroservicios\Proyecto\Authentication\src\main\java\com\pdau\Authentication\repository\AdminRepository.java
+C:\Users\SEBASTIAN\OneDrive\Escritorio\Universidad\8. Octavo semestre\MIcroservicios\Proyecto\Authentication\src\main\java\com\pdau\Authentication\repository\DocumentoRepository.java
 C:\Users\SEBASTIAN\OneDrive\Escritorio\Universidad\8. Octavo semestre\MIcroservicios\Proyecto\Authentication\src\main\java\com\pdau\Authentication\repository\PasswordResetTokenRepository.java
 C:\Users\SEBASTIAN\OneDrive\Escritorio\Universidad\8. Octavo semestre\MIcroservicios\Proyecto\Authentication\src\main\java\com\pdau\Authentication\security\JwtFilter.java
 C:\Users\SEBASTIAN\OneDrive\Escritorio\Universidad\8. Octavo semestre\MIcroservicios\Proyecto\Authentication\src\main\java\com\pdau\Authentication\security\PasswordEncoderConfig.java
