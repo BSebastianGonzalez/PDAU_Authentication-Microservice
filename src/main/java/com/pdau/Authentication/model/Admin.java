@@ -1,12 +1,12 @@
 package com.pdau.Authentication.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Entity
 @Data
@@ -24,4 +24,8 @@ public class Admin{
     private String correo;
     private String contrasenia;
     private Rol rol;
+
+    @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Documento> documentos;
 }

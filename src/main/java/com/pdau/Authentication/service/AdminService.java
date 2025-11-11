@@ -1,12 +1,18 @@
 package com.pdau.Authentication.service;
 
 import com.pdau.Authentication.model.Admin;
+import com.pdau.Authentication.model.Documento;
 import com.pdau.Authentication.model.Rol;
+import com.pdau.Authentication.model.TipoDocumento;
 import com.pdau.Authentication.repository.AdminRepository;
+import com.pdau.Authentication.repository.DocumentoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,8 +21,11 @@ import java.util.stream.Collectors;
 public class AdminService {
 
     private final AdminRepository adminRepository;
-
+    private final DocumentoRepository documentoRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${documentos.max-size}")
+    private long maxFileSize;
 
     public List<Admin> getAllAdmins() {
         return adminRepository.findAll();
@@ -68,5 +77,39 @@ public class AdminService {
                 .stream()
                 .map(Admin::getCorreo)
                 .collect(Collectors.toList());
+    }
+
+    public Documento subirDocumento(Long adminId, MultipartFile file, TipoDocumento tipo) throws Exception {
+        Admin admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new IllegalArgumentException("Administrador no encontrado con ID: " + adminId));
+
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Debe adjuntar un archivo.");
+        }
+
+        if (file.getSize() > maxFileSize) {
+            throw new IllegalArgumentException("El archivo excede el tamaño máximo permitido (2 MB).");
+        }
+
+        Documento documento = new Documento();
+        documento.setNombre(file.getOriginalFilename());
+        documento.setTipoContenido(file.getContentType());
+        documento.setDatos(file.getBytes());
+        documento.setTipoDocumento(tipo);
+        documento.setAdmin(admin);
+
+        // Guardar documento
+        Documento saved = documentoRepository.save(documento);
+
+        // Agregarlo al admin
+        admin.getDocumentos().add(saved);
+        adminRepository.save(admin);
+
+        return saved;
+    }
+
+    public Documento obtenerDocumentoPorTipo(Long adminId, TipoDocumento tipo) {
+        return documentoRepository.findByAdminIdAndTipoDocumento(adminId, tipo)
+                .orElseThrow(() -> new IllegalArgumentException("Documento no encontrado para el tipo " + tipo));
     }
 }
