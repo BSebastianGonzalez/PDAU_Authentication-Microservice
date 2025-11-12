@@ -87,4 +87,37 @@ public class AdminController {
                     .body("Error al obtener el documento: " + e.getMessage());
         }
     }
+
+    @PutMapping("/{id}/documento")
+    public ResponseEntity<?> actualizarDocumento(
+            @PathVariable("id") Long adminId,
+            @RequestParam("tipo") TipoDocumento tipo,
+            @RequestParam("file") MultipartFile file
+    ) {
+        try {
+            Documento actualizado = adminService.actualizarDocumento(adminId, tipo, file);
+            return ResponseEntity.ok("Documento actualizado correctamente: " + actualizado.getNombre());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al actualizar el documento: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{id}/documento")
+    public ResponseEntity<?> eliminarDocumento(
+            @PathVariable("id") Long adminId,
+            @RequestParam("tipo") TipoDocumento tipo
+    ) {
+        try {
+            adminService.eliminarDocumento(adminId, tipo);
+            return ResponseEntity.ok("Documento eliminado correctamente");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al eliminar el documento: " + e.getMessage());
+        }
+    }
 }
