@@ -112,4 +112,38 @@ public class AdminService {
         return documentoRepository.findByAdminIdAndTipoDocumento(adminId, tipo)
                 .orElseThrow(() -> new IllegalArgumentException("Documento no encontrado para el tipo " + tipo));
     }
+
+    public Documento actualizarDocumento(Long adminId, TipoDocumento tipo, MultipartFile file) throws Exception {
+        Admin admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new IllegalArgumentException("Admin no encontrado con ID: " + adminId));
+
+        Documento documento = admin.getDocumentos().stream()
+                .filter(d -> d.getTipoDocumento() == tipo)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No existe un documento de tipo " + tipo + " para este admin"));
+
+        if (file.getSize() > maxFileSize) {
+            throw new IllegalArgumentException("El archivo excede el tamaño máximo permitido (2 MB)");
+        }
+
+        documento.setNombre(file.getOriginalFilename());
+        documento.setTipoContenido(file.getContentType());
+        documento.setDatos(file.getBytes());
+
+        return documentoRepository.save(documento);
+    }
+
+    public void eliminarDocumento(Long adminId, TipoDocumento tipo) {
+        Admin admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new IllegalArgumentException("Admin no encontrado con ID: " + adminId));
+
+        Documento documento = admin.getDocumentos().stream()
+                .filter(d -> d.getTipoDocumento() == tipo)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No existe un documento de tipo " + tipo + " para este admin"));
+
+        admin.getDocumentos().remove(documento);
+        documentoRepository.delete(documento);
+        adminRepository.save(admin);
+    }
 }
